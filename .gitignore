@@ -1,0 +1,8 @@
+Blocking/
+Nonblocking/
+
+Release/
+x64/
+Debug/
+
+.vs/
