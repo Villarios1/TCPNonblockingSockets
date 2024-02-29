@@ -76,7 +76,7 @@ namespace PNet
 			return;
 		}
 		else
-			std::cout << "[IPEndpoint(const char*, const unsigned short)] getaddrinfo error: " << GetLastError() << '\n';
+			std::cerr << "[IPEndpoint(const char*, const unsigned short)] getaddrinfo error: " << GetLastError() << '\n';
 	}
 
 	IPEndpoint::IPEndpoint(sockaddr* addr)
@@ -102,7 +102,7 @@ namespace PNet
 				m_hostname = ipv4_string;
 			}
 			else
-				std::cout << "[IPEndpoint::IPEndpoint(sockaddr*)] inet_ntop ipv4 error: " << GetLastError() << '\n';
+				std::cerr << "[IPEndpoint::IPEndpoint(sockaddr*)] inet_ntop ipv4 error: " << GetLastError() << '\n';
 		}
 		else //IPv6
 		{
@@ -123,7 +123,7 @@ namespace PNet
 				m_hostname = ipv6_string;
 			}
 			else
-				std::cout << "[IPEndpoint::IPEndpoint(sockaddr*)] inet_ntop error: " << GetLastError() << '\n';
+				std::cerr << "[IPEndpoint::IPEndpoint(sockaddr*)] inet_ntop error: " << GetLastError() << '\n';
 		}
 	}
 

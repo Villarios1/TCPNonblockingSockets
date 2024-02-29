@@ -1,6 +1,4 @@
 #pragma once
-#include "SocketHandle.h"
-#include "IPVersion.h"
 #include "SocketOption.h"
 #include "IPEndpoint.h"
 #include "Constants.h"
@@ -9,6 +7,8 @@
 
 namespace PNet
 {
+	using SocketHandle = SOCKET; //в линукс этот тип сразу является интом, поэтому используем typedef для мультиплатформенности //?
+
 	class Socket
 	{
 	private:

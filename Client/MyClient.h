@@ -1,10 +1,17 @@
 #pragma once
 #include "PNet.h"
-#include "FileInfo.h"
 #include <mutex>
 #include <condition_variable>
 
 using namespace PNet;
+
+struct FileInfo
+{
+	std::filesystem::path filePath; //local
+	std::filesystem::path fileName;
+	uint64_t fileSize;
+	uint32_t chunksCount;
+};
 
 class MyClient : public Client
 {

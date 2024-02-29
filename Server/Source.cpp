@@ -1,5 +1,5 @@
 #include "MyServer.h"
-#include <Windows.h>
+#include <stdlib.h>
 
 int main()
 {

@@ -149,7 +149,6 @@
   <ItemGroup>
     <ClInclude Include="Client.h" />
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="FileInfo.h" />
     <ClInclude Include="IPEndpoint.h" />
     <ClInclude Include="IPVersion.h" />
     <ClInclude Include="Network.h" />
@@ -160,7 +159,6 @@
     <ClInclude Include="PNet.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Socket.h" />
-    <ClInclude Include="SocketHandle.h" />
     <ClInclude Include="SocketOption.h" />
     <ClInclude Include="TCPConnection.h" />
   </ItemGroup>

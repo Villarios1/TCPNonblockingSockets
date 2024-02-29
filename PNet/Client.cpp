@@ -103,8 +103,7 @@ namespace PNet
 					}
 					//WSAEWOULDBLOCK означает что recv не успевает выполнитьс€ мгновенно, и это будет блокирующей операцией.
 					//Ќе закрываем соединение, а просто продолжим на следующей итерации.
-					std::cerr << "WSAEWOULDBLOCK!\n";
-					std::cout << m_connectionInfo << " - Received " << bytesReceived << " bytes.\n";
+					std::cerr << m_connectionInfo << "WSAEWOULDBLOCK on reading.\n";
 				}
 
 				if (bytesReceived > 0) //при WSAEWOULDBLOCK bytesReceived тоже -1 //если отправит 1 байт, но будет WSAEWOULDBLOCK? bytesReceived = -1 ??
@@ -185,7 +184,7 @@ namespace PNet
 							closeConnection("Socket error: " + error);
 							return false;
 						}//дл€ send нужно врем€, а non-blocking не ждет завершени€ функции - продолжим в следующем фрейме
-						std::cout << m_connectionInfo << " - size sendinng block. Sended " << bytesSended << ". Breaking.\n";
+						std::cerr << m_connectionInfo << "WSAEWOULDBLOCK on writing. Breaking.\n";
 						break; //иначе будем ждать завершени€ отправки во внутреннем цикле - блокирующее поведение
 					}
 				}

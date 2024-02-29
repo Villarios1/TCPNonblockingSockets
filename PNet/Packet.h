@@ -36,7 +36,6 @@ namespace PNet
 		Packet& operator<<(T data)
 		{
 			*this << data.string();
-
 			return *this;
 		}
 		Packet& operator>>(std::filesystem::path& data);

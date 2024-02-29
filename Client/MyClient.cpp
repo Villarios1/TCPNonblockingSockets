@@ -44,7 +44,12 @@ void MyClient::runMenu()
 		switch (digit)
 		{
 		case 1: runChat(); break;
-		case 2: runFileSender(); break;
+		case 2:
+		{
+			if (!runFileSender()) 
+				std::cout << "File was not sent.\n\n";
+			break;
+		}
 		case 0: checkVersion(); break;
 		}
 	}
@@ -68,7 +73,6 @@ void MyClient::runChat()
 		m_connection->m_pmOutgoing->append(clientMessagePacket);
 		std::cout << "Sended: " << message << '\n';
 	}
-	return;
 }
 
 std::filesystem::path MyClient::inputFilePath()
@@ -95,7 +99,7 @@ std::filesystem::path MyClient::inputFilePath()
 				std::cerr << "File is 0 bytes size. Sending is not possible.\n";
 				continue;
 			}
-			std::cout << "Path is exists!\n";
+			std::cout << "Path is exists. ";
 			pathExists = true;
 		}
 		else
@@ -109,20 +113,20 @@ bool MyClient::runFileSender()
 {
 	m_fileInfo.filePath = inputFilePath();
 	if (m_fileInfo.filePath == "#")
-		return false;
+		return true;
 	m_fileInfo.fileName = m_fileInfo.filePath.filename();
 
 	//Отправляем количество пакетов, на которые будет разбит файл, и название файла:
 	std::ifstream fileInfo(m_fileInfo.filePath.c_str(), std::ios::ate);
 	if (!fileInfo)
 	{
-		std::cerr << "Can't open the file " << m_fileInfo.fileName << "\n\n";
+		std::cerr << "Can't open the file " << m_fileInfo.fileName << '\n';
 		return false;
 	}
 	m_fileInfo.fileSize = static_cast<uint64_t>(fileInfo.tellg());
 	if (m_fileInfo.fileSize > PNet::g_MaxFileSize)
 	{
-		std::cerr << "Maximum file size exceeded.\n\n";
+		std::cerr << "Maximum file size exceeded.\n";
 		return false;
 	}
 	if (m_fileInfo.fileSize < 1048576) //1megabyte
@@ -147,13 +151,9 @@ bool MyClient::runFileSender()
 	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(1000), [&]() { return m_resumeThread; }); //ждем ответ-сообщения сервера с разрешением на отправку тела файла
 	m_resumeThread = false;
 	if (m_send_permission == false)
-	{
-		std::cout << "The file was not sent.\n\n";
 		return false;
-	}
 
-	sendFileBody();
-	return true;
+	return sendFileBody();
 }
 
 bool MyClient::sendFileBody()
@@ -188,6 +188,7 @@ bool MyClient::sendFileBody()
 			std::cout << "File sended.\n\n";
 	}
 	inf.close();
+
 	return true;
 }
 
