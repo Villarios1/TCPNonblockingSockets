@@ -7,7 +7,14 @@
 
 namespace PNet
 {
-	using SocketHandle = SOCKET; //в линукс этот тип сразу является интом, поэтому используем typedef для мультиплатформенности //?
+	#ifdef _WIND32
+	using SocketHandle = SOCKET; //пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ typedef пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ //?
+	#else
+	using SocketHandle = int;
+	const int INVALID_SOCKET = ~0;
+	const int SOCKET_ERROR = -1;
+	#define closesocket close
+	#endif
 
 	class Socket
 	{
@@ -23,14 +30,14 @@ namespace PNet
 		bool listenSocket(const IPEndpoint& ipEndpoint, const int maxConnections = 10) const;
 		bool acceptSocket(Socket& outSocket, IPEndpoint* optoutEndpoint = nullptr) const;
 		bool connectSocket(const IPEndpoint& ipEndpoint, std::string& outServerInfo) const;
-		bool close();
+		bool closeSocket();
 
 		SocketHandle getHandle() const;
 		IPVersion getIPVersion() const;
 
 		void printErrorDescription(const std::string_view where, const int error) const;
 	private:
-		bool setSocketOption(const SocketOption option, const BOOL value) const;
+		bool setSocketOption(const SocketOption option, const uint32_t value) const;
 		bool bindSocket(const IPEndpoint& ipEndpoint) const;
 		bool getServerInfo(std::string& outServerInfo) const;
 	};

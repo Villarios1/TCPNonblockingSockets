@@ -3,6 +3,14 @@
 #include <iostream>
 #include <any>
 
+#ifndef _WIN32
+#include <unistd.h> //closesocket Linux
+#include <sys/ioctl.h>
+#include <sys/socket.h> //getsockname, setsockopt
+#include <netinet/tcp.h> //TCP_NODELAY
+#define ioctlsocket ioctl
+#endif
+
 namespace PNet
 {
 	Socket::Socket(IPVersion ipVersion, SocketHandle handle) : m_ipVersion(ipVersion), m_handle(handle)
@@ -12,9 +20,9 @@ namespace PNet
 
 	bool Socket::create()
 	{
-		assert(m_ipVersion == IPVersion::IPV4 || m_ipVersion == IPVersion::IPV6); //прост
+		assert(m_ipVersion == IPVersion::IPV4 || m_ipVersion == IPVersion::IPV6); //пїЅпїЅпїЅпїЅпїЅ
 
-		if (m_handle != INVALID_SOCKET) //если handle уже определен
+		if (m_handle != INVALID_SOCKET) //пїЅпїЅпїЅпїЅ handle пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		{
 			std::cerr << "create socket error: INVALID_SOCKET\n";
 			return false;
@@ -30,7 +38,7 @@ namespace PNet
 		if (!setBlocking(false))
 			return false;
 
-		if (!setSocketOption(SocketOption::TCP_NO_DELAY, TRUE))
+		if (!setSocketOption(SocketOption::TCP_NO_DELAY, true))
 			return false;
 
 		return true;
@@ -70,7 +78,7 @@ namespace PNet
 	{
 		if (m_ipVersion == IPVersion::IPV6)
 		{
-			if (!setSocketOption(SocketOption::IPV6_ONLY, FALSE))
+			if (!setSocketOption(SocketOption::IPV6_ONLY, false))
 				return false;
 		}
 
@@ -92,7 +100,11 @@ namespace PNet
 		assert(m_ipVersion == IPVersion::IPV4 || m_ipVersion == IPVersion::IPV6);
 
 		std::any accepted_addr;
+		#ifdef _WIN32
 		int addr_length;
+		#else
+		socklen_t addr_length;
+		#endif
 		if (m_ipVersion == IPVersion::IPV4)
 		{
 			const sockaddr_in addr = {};
@@ -143,7 +155,7 @@ namespace PNet
 
 		if (!getServerInfo(outServerInfo))
 			return false;
-
+//segment fault right there
 		return true;
 	}
 
@@ -154,14 +166,14 @@ namespace PNet
 		if (m_ipVersion == IPVersion::IPV4)
 		{
 			sockaddr_in ipv4addr = {};
-			int addr_size = sizeof(ipv4addr);
+			uint32_t addr_size = sizeof(ipv4addr);
 			connection_addr = ipv4addr;
 			result = getsockname(m_handle, (sockaddr*)&connection_addr, &addr_size);
 		}
 		else // IPv6
 		{
 			sockaddr_in6 ipv6addr = {};
-			int addr_size = sizeof(ipv6addr);
+			uint32_t addr_size = sizeof(ipv6addr);
 			connection_addr = ipv6addr;
 			result = getsockname(m_handle, (sockaddr*)&connection_addr, &addr_size);
 		}
@@ -178,7 +190,7 @@ namespace PNet
 		return true;
 	}
 
-	bool Socket::close()
+	bool Socket::closeSocket()
 	{
 		if (m_handle == INVALID_SOCKET)
 		{
@@ -207,7 +219,7 @@ namespace PNet
 		return m_ipVersion;
 	}
 	
-	bool Socket::setSocketOption(const SocketOption option, const BOOL value) const
+	bool Socket::setSocketOption(const SocketOption option, const uint32_t value) const
 	{
 		int result = 0;
 
@@ -252,8 +264,10 @@ namespace PNet
 		std::cerr << "An error occured in " << where << ": ";
 		switch (error)
 		{
+		case 98: //Linux
 		case 10048: std::cerr << "The address is already in use.\n"; break;
 		case 10054: std::cerr << "Connection was terminated by remote node.\n"; break;
+		case 111: //Linux
 		case 10061: std::cerr << "Connection refused.\n"; break;
 		default: std::cerr << "Unknown errorcode: " << error << '\n'; break;
 		}

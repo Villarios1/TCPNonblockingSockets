@@ -4,7 +4,7 @@
 
 namespace PNet
 {
-	// Попытка определить тип подключения по введенному ip
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ip
 	IPEndpoint::IPEndpoint(const char* ip, const unsigned short port)
 	{
 		m_port = port;
@@ -12,7 +12,7 @@ namespace PNet
 		// IPv4 ?
 		in_addr addr;
 		int result = inet_pton(AF_INET, ip, &addr);
-		if (result == 1) // если введен IPv4 адрес
+		if (result == 1) // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ IPv4 пїЅпїЅпїЅпїЅпїЅ
 		{
 			m_ipString = ip;
 			m_hostname = ip;
@@ -26,13 +26,13 @@ namespace PNet
 		// IPv6 ?
 		in6_addr addr6;
 		result = inet_pton(AF_INET6, ip, &addr6);
-		if (result == 1) // если введен IPv6 адрес
+		if (result == 1) // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ IPv6 пїЅпїЅпїЅпїЅпїЅ
 		{
 			m_ipString = ip;
 			m_hostname = ip;
 			m_ipVersion = IPVersion::IPV6;
 			m_ipBytes.resize(sizeof(addr6));
-			memcpy(&m_ipBytes[0], &addr6.u, sizeof(addr6));
+			memcpy(&m_ipBytes[0], &addr6, sizeof(addr6));
 
 			return;
 		}
@@ -76,7 +76,7 @@ namespace PNet
 			return;
 		}
 		else
-			std::cerr << "[IPEndpoint(const char*, const unsigned short)] getaddrinfo error: " << GetLastError() << '\n';
+			std::cerr << "[IPEndpoint(const char*, const unsigned short)] getaddrinfo error: " << WSAGetLastError() << '\n';
 	}
 
 	IPEndpoint::IPEndpoint(sockaddr* addr)
@@ -102,7 +102,7 @@ namespace PNet
 				m_hostname = ipv4_string;
 			}
 			else
-				std::cerr << "[IPEndpoint::IPEndpoint(sockaddr*)] inet_ntop ipv4 error: " << GetLastError() << '\n';
+				std::cerr << "[IPEndpoint::IPEndpoint(sockaddr*)] inet_ntop ipv4 error: " << WSAGetLastError() << '\n';
 		}
 		else //IPv6
 		{
@@ -123,7 +123,7 @@ namespace PNet
 				m_hostname = ipv6_string;
 			}
 			else
-				std::cerr << "[IPEndpoint::IPEndpoint(sockaddr*)] inet_ntop error: " << GetLastError() << '\n';
+				std::cerr << "[IPEndpoint::IPEndpoint(sockaddr*)] inet_ntop error: " << WSAGetLastError() << '\n';
 		}
 	}
 

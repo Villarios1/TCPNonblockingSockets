@@ -3,13 +3,17 @@
 #include <thread>
 #include <chrono>
 
+#ifndef _WIN32
+#include <math.h> //ceil Linux
+#endif
+
 void MyClient::checkVersion()
 {
 	std::shared_ptr<Packet> clientVersionPacket = std::make_shared<Packet>(PacketType::PACKET_CLIENT_VERSION);
 	*clientVersionPacket << m_majorVersion << m_minorVersion;
 	m_connection->m_pmOutgoing->append(clientVersionPacket);
 	std::unique_lock<std::mutex> ul(m_mutex);
-	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(500), [&]() { return m_resumeThread; }); //ждем ответ-сообщения сервера перед возвратом в меню
+	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(500), [&]() { return m_resumeThread; }); //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ
 	m_resumeThread = false;
 }
 
@@ -116,7 +120,7 @@ bool MyClient::runFileSender()
 		return true;
 	m_fileInfo.fileName = m_fileInfo.filePath.filename();
 
-	//Отправляем количество пакетов, на которые будет разбит файл, и название файла:
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ:
 	std::ifstream fileInfo(m_fileInfo.filePath.c_str(), std::ios::ate);
 	if (!fileInfo)
 	{
@@ -148,7 +152,7 @@ bool MyClient::runFileSender()
 	m_connection->m_pmOutgoing->append(fileInfoPacket);
 
 	std::unique_lock<std::mutex> ul(m_mutex);
-	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(1000), [&]() { return m_resumeThread; }); //ждем ответ-сообщения сервера с разрешением на отправку тела файла
+	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(1000), [&]() { return m_resumeThread; }); //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 	m_resumeThread = false;
 	if (m_send_permission == false)
 		return false;
@@ -200,9 +204,9 @@ bool MyClient::processPacket(Packet& packet)
 	{
 		packet >> m_send_permission;
 		m_resumeThread = true;
-		if (m_send_permission) //разрешение на отправку файла + клиентам придет CLIENT_IDENTIFIER, за ним FILE_INFO
+		if (m_send_permission) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ CLIENT_IDENTIFIER, пїЅпїЅ пїЅпїЅпїЅ FILE_INFO
 			m_conditionVariable.notify_one();
-		//иначе придет пакет SERVER_MESSAGE
+		//пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ SERVER_MESSAGE
 		break;
 	}
 	case PacketType::PACKET_CLIENT_VERSION:

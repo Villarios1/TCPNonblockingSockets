@@ -1,5 +1,5 @@
 #pragma once
-#include "PNet.h"
+#include "PNet/PNet.h" //Linux требует указать папку
 
 using namespace PNet;
 

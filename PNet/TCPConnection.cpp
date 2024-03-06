@@ -15,6 +15,6 @@ namespace PNet
 
 	void TCPConnection::closeTCPConnection()
 	{
-		m_socket.close();
+		m_socket.closeSocket();
 	}
 }

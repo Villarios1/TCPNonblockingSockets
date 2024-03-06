@@ -3,6 +3,7 @@
 
 int main()
 {
+	#ifdef _WIN32
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
@@ -11,10 +12,11 @@ int main()
 		std::cout << "Winsock api failed to initialize.\n";
 		return 0;
 	}
+	#endif
 	std::cout << "Winsock api successfully initialized.\n";
 
 	std::unique_ptr<MyServer> server = std::make_unique<MyServer>();
-	if (server->initialize(std::make_unique<IPEndpoint>("HOME-PC", 6112)))
+	if (server->initialize(std::make_unique<IPEndpoint>("::1", 6112)))
 	{
 		while (1)
 		{
@@ -22,8 +24,10 @@ int main()
 		}
 	}
 
+	#ifdef _WIN32
 	Network::shutdown();
 	system("pause");
-
+	#endif
+	
 	return 0;
 }

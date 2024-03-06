@@ -2,7 +2,15 @@
 #include "IPVersion.h"
 #include <string>
 #include <vector>
+
+#ifdef _WIN32
 #include <WS2tcpip.h>
+#else // Linux
+#include <arpa/inet.h> //inet_pton + in.h
+#define WSAGetLastError() errno
+#include <netdb.h> //getaddrinfo
+#include <string.h> //memcpy Linux
+#endif
 
 namespace PNet
 {

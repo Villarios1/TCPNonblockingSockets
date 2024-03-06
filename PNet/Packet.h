@@ -1,6 +1,4 @@
 #pragma once
-#define WIN32_LEAN_AND_MEAN
-#include "WinSock2.h"
 #include "PacketType.h"
 #include <vector>
 #include <filesystem>
@@ -13,12 +11,12 @@ namespace PNet
 	private:
 		uint32_t m_extractionOffset;
 	public:
-		std::vector<char> m_buffer; //хранит в network порядке
+		std::vector<char> m_buffer; //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ network пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 	public:
 		Packet(const PacketType packetType = PacketType::PACKET_INVALID);
 
-		template <typename T> requires std::is_same<T, bool>::value  //Packet& operator<<(bool data); ломает Packet& operator>>(uint32_t& data); лол
+		template <typename T> requires std::is_same<T, bool>::value  //Packet& operator<<(bool data); пїЅпїЅпїЅпїЅпїЅпїЅ Packet& operator>>(uint32_t& data); пїЅпїЅпїЅ
 		Packet& operator<<(T data)
 		{
 			append(&data, sizeof(data));

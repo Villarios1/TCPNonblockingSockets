@@ -1,3 +1,10 @@
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include "WinSock2.h"
+#else
+#include <arpa/inet.h> //htonl
+#endif
+
 #include "Packet.h"
 #include "Constants.h"
 #include "PacketException.h"
@@ -10,21 +17,21 @@ namespace PNet
 		assignPacketType(packetType);
 	}
 
-	void Packet::reset() //обнуление и назначение в первые 2 байта неизвестный тип пакета
+	void Packet::reset() //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 2 пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	{
 		m_buffer.resize(sizeof(PacketType));
 		assignPacketType(PacketType::PACKET_INVALID);
 		m_extractionOffset = sizeof(PacketType);
 	}
 
-	void Packet::assignPacketType(const PacketType packetType) // назначаем в первые 2 байта тип пакета в network order
+	void Packet::assignPacketType(const PacketType packetType) // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 2 пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ network order
 	{
 		PacketType* packetTypePtr = reinterpret_cast<PacketType*>(&m_buffer[0]);
 		const u_short encodedPacket = htons(static_cast<u_short>(packetType));
 		*packetTypePtr = static_cast<PacketType>(encodedPacket);
 	}
 	
-	PacketType Packet::getPacketType() //возврат типа пакета в host order из первых двух байт
+	PacketType Packet::getPacketType() //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ host order пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	{
 		const PacketType* packetTypePtr = reinterpret_cast<PacketType*>(&m_buffer[0]);
 		const u_short packetType = ntohs(static_cast<u_short>(*packetTypePtr));
@@ -33,7 +40,7 @@ namespace PNet
 
 	void Packet::append(const void* data, uint32_t size)
 	{
-		if ((m_buffer.size() + size) > g_MaxPacketSize) // проверка одного ввода
+		if ((m_buffer.size() + size) > g_MaxPacketSize) // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 			throw PacketException("[Packet::append(const void*, uint32_t)] - Packet size exceeded max packet size.");
 
 		m_buffer.insert(m_buffer.end(), (char*)data, (char*)data + size);
@@ -66,7 +73,7 @@ namespace PNet
 		return *this;
 	}
 
-	Packet& Packet::operator>>(uint32_t& data) // buffer >> data // вывод не изменяет buffer
+	Packet& Packet::operator>>(uint32_t& data) // buffer >> data // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ buffer
 	{
 		if ((m_extractionOffset + sizeof(data)) > m_buffer.size())
 			throw PacketException("[Packet& Packet::operator>>(uint32_t&)] - Exctraction offset exceeded buffer size.");
