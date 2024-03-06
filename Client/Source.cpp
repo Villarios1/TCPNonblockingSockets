@@ -12,8 +12,8 @@ int main()
 		std::cerr << "Winsock api failed to initialize.\n";
 		return 0;
 	}
-	#endif
 	std::cout << "Winsock api successfully initialized.\n";
+	#endif
 
 	std::shared_ptr<MyClient> client = std::make_shared<MyClient>();
 	if (client->connect(std::make_unique<IPEndpoint>("::1", 6112), client))

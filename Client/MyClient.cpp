@@ -51,7 +51,7 @@ void MyClient::runMenu()
 		case 2:
 		{
 			if (!runFileSender()) 
-				std::cout << "File was not sent.\n\n";
+				std::cerr << "File was not sent.\n\n";
 			break;
 		}
 		case 0: checkVersion(); break;

@@ -7,7 +7,7 @@
 
 namespace PNet
 {
-	#ifdef _WIND32
+	#ifdef _WIN32
 	using SocketHandle = SOCKET; //� ������ ���� ��� ����� �������� �����, ������� ���������� typedef ��� ��������������������� //?
 	#else
 	using SocketHandle = int;

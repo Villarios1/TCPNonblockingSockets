@@ -3,8 +3,8 @@
 #include <iostream>
 #include <any>
 
-#ifndef _WIN32
-#include <unistd.h> //closesocket Linux
+#ifndef _WIN32 //if Linux
+#include <unistd.h> //closesocket
 #include <sys/ioctl.h>
 #include <sys/socket.h> //getsockname, setsockopt
 #include <netinet/tcp.h> //TCP_NODELAY
@@ -163,17 +163,22 @@ namespace PNet
 	{
 		std::any connection_addr;
 		int result = SOCKET_ERROR;
+#ifdef _WIN32
+		int addr_size;
+#else
+		uint32_t addr_size;
+#endif
 		if (m_ipVersion == IPVersion::IPV4)
 		{
 			sockaddr_in ipv4addr = {};
-			uint32_t addr_size = sizeof(ipv4addr);
+			addr_size = sizeof(ipv4addr);
 			connection_addr = ipv4addr;
 			result = getsockname(m_handle, (sockaddr*)&connection_addr, &addr_size);
 		}
 		else // IPv6
 		{
 			sockaddr_in6 ipv6addr = {};
-			uint32_t addr_size = sizeof(ipv6addr);
+			addr_size = sizeof(ipv6addr);
 			connection_addr = ipv6addr;
 			result = getsockname(m_handle, (sockaddr*)&connection_addr, &addr_size);
 		}
@@ -266,6 +271,8 @@ namespace PNet
 		{
 		case 98: //Linux
 		case 10048: std::cerr << "The address is already in use.\n"; break;
+		case 99: //Linux
+		case 10049: std::cerr << "The requested address cannot be assigned.\n"; break;
 		case 10054: std::cerr << "Connection was terminated by remote node.\n"; break;
 		case 111: //Linux
 		case 10061: std::cerr << "Connection refused.\n"; break;

@@ -1,5 +1,9 @@
 #pragma once
-#include "PNet/PNet.h"
+#ifdef _WIN32
+#include "PNet.h"
+#else
+#include "PNet/PNet.h" //Linux требует указать папку
+#endif
 #include <mutex>
 #include <condition_variable>
 

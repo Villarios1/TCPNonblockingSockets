@@ -1,5 +1,9 @@
 #pragma once
+#ifdef _WIN32
+#include "PNet.h"
+#else
 #include "PNet/PNet.h" //Linux требует указать папку
+#endif
 
 using namespace PNet;
 
