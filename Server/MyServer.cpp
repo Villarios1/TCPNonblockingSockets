@@ -61,10 +61,10 @@ bool MyServer::processPacket(TCPConnection& fromConnection, std::shared_ptr<Pack
 	{
 		bool allow_to_upload = (m_connections.size() == 1) ? false : true;
 		std::shared_ptr<Packet> permissionPacket = std::make_shared<Packet>(PacketType::PACKET_UPLOAD_PERMISSION);
-		*permissionPacket << allow_to_upload; //первым пакетом устанавливаем отказ/разрешение на отправку тела
+		*permissionPacket << allow_to_upload; //РїРµСЂРІС‹Рј РїР°РєРµС‚РѕРј СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РѕС‚РєР°Р·/СЂР°Р·СЂРµС€РµРЅРёРµ РЅР° РѕС‚РїСЂР°РІРєСѓ С‚РµР»Р°
 		fromConnection.m_pmOutgoing->append(permissionPacket);
 
-		if (!allow_to_upload) //в случае отказа будет второй пакет с сообщением
+		if (!allow_to_upload) //РІ СЃР»СѓС‡Р°Рµ РѕС‚РєР°Р·Р° Р±СѓРґРµС‚ РІС‚РѕСЂРѕР№ РїР°РєРµС‚ СЃ СЃРѕРѕР±С‰РµРЅРёРµРј
 		{
 			std::shared_ptr<Packet> refusedPacket = std::make_shared<Packet>(PacketType::PACKET_SERVER_MESSAGE);
 			*refusedPacket << "There are no more connected clients. Forwarding refused.";
@@ -72,8 +72,8 @@ bool MyServer::processPacket(TCPConnection& fromConnection, std::shared_ptr<Pack
 			break;
 		}
 
-		*packet << fromConnection.getConnectionInfo().data(); //иначе дополняем заголовок информацией об отправителе
-		for (TCPConnection& connection : m_connections) //и рассылаем всем клиентам
+		*packet << fromConnection.getConnectionInfo().data(); //РёРЅР°С‡Рµ РґРѕРїРѕР»РЅСЏРµРј Р·Р°РіРѕР»РѕРІРѕРє РёРЅС„РѕСЂРјР°С†РёРµР№ РѕР± РѕС‚РїСЂР°РІРёС‚РµР»Рµ
+		for (TCPConnection& connection : m_connections) //Рё СЂР°СЃСЃС‹Р»Р°РµРј РІСЃРµРј РєР»РёРµРЅС‚Р°Рј
 		{
 			if (&connection == &fromConnection)
 				continue;
@@ -90,15 +90,15 @@ bool MyServer::processPacket(TCPConnection& fromConnection, std::shared_ptr<Pack
 			if (&connection == &fromConnection)
 				continue;
 
-			connection.m_pmOutgoing->append(clientMessageHeaderPacket); //первый пакет - IP:Port
-			connection.m_pmOutgoing->append(packet); //второй - сообщение
+			connection.m_pmOutgoing->append(clientMessageHeaderPacket); //РїРµСЂРІС‹Р№ РїР°РєРµС‚ - IP:Port
+			connection.m_pmOutgoing->append(packet); //РІС‚РѕСЂРѕР№ - СЃРѕРѕР±С‰РµРЅРёРµ
 		}
 		break;
 	}
 	case PacketType::PACKET_FILE_CHUNK:
 	case PacketType::PACKET_INTEGER_ARRAY:
 	{
-		for (TCPConnection& connection : m_connections) //просто пересылка всем
+		for (TCPConnection& connection : m_connections) //РїСЂРѕСЃС‚Рѕ РїРµСЂРµСЃС‹Р»РєР° РІСЃРµРј
 		{
 			if (&connection == &fromConnection)
 				continue;

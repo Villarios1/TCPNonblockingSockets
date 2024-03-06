@@ -13,7 +13,7 @@ void MyClient::checkVersion()
 	*clientVersionPacket << m_majorVersion << m_minorVersion;
 	m_connection->m_pmOutgoing->append(clientVersionPacket);
 	std::unique_lock<std::mutex> ul(m_mutex);
-	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(500), [&]() { return m_resumeThread; }); //���� �����-��������� ������� ����� ��������� � ����
+	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(500), [&]() { return m_resumeThread; }); //ждем ответ-сообщения сервера перед возвратом в меню
 	m_resumeThread = false;
 }
 
@@ -120,7 +120,7 @@ bool MyClient::runFileSender()
 		return true;
 	m_fileInfo.fileName = m_fileInfo.filePath.filename();
 
-	//���������� ���������� �������, �� ������� ����� ������ ����, � �������� �����:
+	//Отправляем количество пакетов, на которые будет разбит файл, и название файла:
 	std::ifstream fileInfo(m_fileInfo.filePath.c_str(), std::ios::ate);
 	if (!fileInfo)
 	{
@@ -133,9 +133,9 @@ bool MyClient::runFileSender()
 		std::cerr << "Maximum file size exceeded.\n";
 		return false;
 	}
-	if (m_fileInfo.fileSize < 1048576) //1megabyte
+	if (m_fileInfo.fileSize < 1048576) // 1 megabyte
 		std::cout << "Sending file of " << m_fileInfo.fileSize << " bytes...\n";
-	else if (m_fileInfo.fileSize < 1073741824) //1gigabyte
+	else if (m_fileInfo.fileSize < 1073741824) // 1 gigabyte
 		std::cout << "Sending file of " << m_fileInfo.fileSize / 1024 << " kilobytes...\n";
 	else 
 		std::cout << "Sending file of " << m_fileInfo.fileSize / 1048576 << " megabytes...\n";
@@ -152,7 +152,7 @@ bool MyClient::runFileSender()
 	m_connection->m_pmOutgoing->append(fileInfoPacket);
 
 	std::unique_lock<std::mutex> ul(m_mutex);
-	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(1000), [&]() { return m_resumeThread; }); //���� �����-��������� ������� � ����������� �� �������� ���� �����
+	m_conditionVariable.wait_for(ul, std::chrono::milliseconds(1000), [&]() { return m_resumeThread; }); //ждем ответ-сообщения сервера с разрешением на отправку тела файла
 	m_resumeThread = false;
 	if (m_send_permission == false)
 		return false;
@@ -204,9 +204,9 @@ bool MyClient::processPacket(Packet& packet)
 	{
 		packet >> m_send_permission;
 		m_resumeThread = true;
-		if (m_send_permission) //���������� �� �������� ����� + �������� ������ CLIENT_IDENTIFIER, �� ��� FILE_INFO
+		if (m_send_permission) //разрешение на отправку файла + клиентам придет CLIENT_IDENTIFIER, за ним FILE_INFO
 			m_conditionVariable.notify_one();
-		//����� ������ ����� SERVER_MESSAGE
+		//иначе придет пакет SERVER_MESSAGE
 		break;
 	}
 	case PacketType::PACKET_CLIENT_VERSION:

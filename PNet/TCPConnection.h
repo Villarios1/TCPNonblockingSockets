@@ -18,11 +18,11 @@ namespace PNet
 	public:
 		std::unique_ptr<PacketManager> m_pmIncoming = std::make_unique<PacketManager>();
 		std::unique_ptr<PacketManager> m_pmOutgoing = std::make_unique<PacketManager>();
-		char m_buffer[PNet::g_MaxPacketSize]; //�.� �� �� ��������� �����, �� �� �� ����� ��������� ���� ����� �������������� ������
+		char m_buffer[PNet::g_MaxPacketSize]; //т.к мы не блокируем поток, то мы не может позволить себе иметь недозаписанные пакеты
 
 	public:
 		TCPConnection(Socket& socket, std::unique_ptr<IPEndpoint> ipEndpoint);
-		TCPConnection() = default; //��� �������� ������� ������� �� ���������
+		TCPConnection() = default; //для создания объекта клиента по умолчанию
 
 		std::string_view getConnectionInfo() const;
 		void closeTCPConnection();

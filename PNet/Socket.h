@@ -8,7 +8,7 @@
 namespace PNet
 {
 	#ifdef _WIN32
-	using SocketHandle = SOCKET; //� ������ ���� ��� ����� �������� �����, ������� ���������� typedef ��� ��������������������� //?
+	using SocketHandle = SOCKET;
 	#else
 	using SocketHandle = int;
 	const int INVALID_SOCKET = ~0;

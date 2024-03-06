@@ -11,12 +11,12 @@ namespace PNet
 	private:
 		uint32_t m_extractionOffset;
 	public:
-		std::vector<char> m_buffer; //������ � network �������
+		std::vector<char> m_buffer; //хранит в network порядке
 
 	public:
 		Packet(const PacketType packetType = PacketType::PACKET_INVALID);
 
-		template <typename T> requires std::is_same<T, bool>::value  //Packet& operator<<(bool data); ������ Packet& operator>>(uint32_t& data); ���
+		template <typename T> requires std::is_same<T, bool>::value  //Packet& operator<<(bool data); ломает Packet& operator>>(uint32_t& data); лол
 		Packet& operator<<(T data)
 		{
 			append(&data, sizeof(data));

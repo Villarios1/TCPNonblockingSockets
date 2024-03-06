@@ -2,7 +2,7 @@
 #ifdef _WIN32
 #include "PNet.h"
 #else
-#include "PNet/PNet.h" //Linux требует указать папку
+#include "PNet/PNet.h" //Linux С‚СЂРµР±СѓРµС‚ СѓРєР°Р·Р°С‚СЊ РїР°РїРєСѓ
 #endif
 #include <mutex>
 #include <condition_variable>

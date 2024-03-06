@@ -21,11 +21,11 @@ namespace PNet
 						m_master_fd.events = POLLRDNORM;
 						m_master_fd.revents = 0;
 
-						m_connection = std::make_unique<TCPConnection>(socket, std::move(ipEndpoint)); //�� ������ ����� ���������� 2 ���� � ������������ TCP
-						m_isConnected = true;														//����� ��� connection= ���������� � ���� + ������� TCP.
-					}										//����� ������� ����� - ������ ������� copy. ��� ������� ������ TCP - ����� ����� ����� move.
-				}		//� ����� ������ ����� 1 ����� ���, � ������ ����� ����� ���������� TCP=m_connection - �� ���� ���������� ����. �������� �� r-value ���.
-			}			//����� ��� ����� � ���� ��������, ��� IPEndpoint.
+						m_connection = std::make_unique<TCPConnection>(socket, std::move(ipEndpoint)); //по ссылке сокет копируется 2 раза в конструкторе TCP 
+						m_isConnected = true;														//потом при connection= копируется в него + мувится TCP. 
+					}										//Можно мувнуть здесь - вместо первого copy. Еще мувнуть внутри TCP - тогда везде будет move. 
+				}		//В любом случае будет 1 адрес тут, и другой адрес члена временного TCP=m_connection - на него переключит уник. Выигрыша от r-value нет. 
+			}			//Разве что сразу в куче выделять, как IPEndpoint.
 			if (m_isConnected == false)
 				socket.closeSocket();
 		}
@@ -50,8 +50,8 @@ namespace PNet
 
 	bool Client::frame()
 	{
-		if (m_connection->m_pmOutgoing->hasPendingPacket()) //���� � ���������� ���� ������� �� �������� ������
-			m_master_fd.events = POLLRDNORM | POLLWRNORM; //������������� ��� ��� ������ ������ � ���� �������� ����� ��������� ��� � ��������
+		if (m_connection->m_pmOutgoing->hasPendingPacket()) //если в соединении есть очередь на отправку данных
+			m_master_fd.events = POLLRDNORM | POLLWRNORM; //устанавливаем ему что помимо приема в этой итерации нужно проверить еще и отправку
 
 		const int result = WSAPoll(&m_master_fd, 1, 50);
 		if (result == SOCKET_ERROR)
@@ -60,7 +60,7 @@ namespace PNet
 			closeConnection(reason);
 			return false;
 		}
-		if (result > 0) //���� �������� �����:
+		if (result > 0) //если случился ивент:
 		{
 			if (m_master_fd.revents & POLLERR)
 			{
@@ -78,9 +78,9 @@ namespace PNet
 				return false;
 			}
 
-			if (m_master_fd.revents & POLLRDNORM) //���� � ����� ��� send - �������� ������
+			if (m_master_fd.revents & POLLRDNORM) //если в сокет был send - получаем данные
 			{
-				PacketManager& pmi = *m_connection->m_pmIncoming; //�� ������� ���������� (� �������) ���������� ������ � ������� �� �����
+				PacketManager& pmi = *m_connection->m_pmIncoming; //на текущем соединении (в сервере) записываем данные в очередь на прием
 
 				int bytesReceived = 0;
 				if (pmi.m_cpTask == PacketTask::PROCESS_PACKET_SIZE)
@@ -101,17 +101,17 @@ namespace PNet
 						closeConnection("Socket error: " + error);
 						return false;
 					}
-					//WSAEWOULDBLOCK �������� ��� recv �� �������� ����������� ���������, � ��� ����� ����������� ���������.
-					//�� ��������� ����������, � ������ ��������� �� ��������� ��������.
+					//WSAEWOULDBLOCK означает что recv не успевает выполниться мгновенно, и это будет блокирующей операцией.
+					//Не закрываем соединение, а просто продолжим на следующей итерации.
 					std::cerr << m_connectionInfo << "WSAEWOULDBLOCK on reading.\n";
 				}
 
-				if (bytesReceived > 0) //��� WSAEWOULDBLOCK bytesReceived ���� -1 //���� �������� 1 ����, �� ����� WSAEWOULDBLOCK? bytesReceived = -1 ??
+				if (bytesReceived > 0) //при WSAEWOULDBLOCK bytesReceived тоже -1 //если отправит 1 байт, но будет WSAEWOULDBLOCK? bytesReceived = -1 ??
 					pmi.m_cpExtractionOffset += bytesReceived;
 
 				if (pmi.m_cpTask == PacketTask::PROCESS_PACKET_SIZE)
 				{
-					if (pmi.m_cpExtractionOffset == sizeof(pmi.m_cpSize)) //���� ��������� �������� ������ ������
+					if (pmi.m_cpExtractionOffset == sizeof(pmi.m_cpSize)) //если полностью получили размер пакета
 					{
 						pmi.m_cpSize = ntohs(pmi.m_cpSize);
 						if (pmi.m_cpSize > PNet::g_MaxPacketSize)
@@ -121,16 +121,15 @@ namespace PNet
 						}
 						pmi.m_cpExtractionOffset = 0;
 						pmi.m_cpTask = PacketTask::PROCESS_PACKET_CONTENTS;
-						//? connection.m_buffer.resize(connection.m_pmIncoming.m_cpSize);
 					}
 				}
 				else //process packet contents
 				{
-					if (pmi.m_cpExtractionOffset == pmi.m_cpSize) //���� ��������� �������� �����
+					if (pmi.m_cpExtractionOffset == pmi.m_cpSize) //если полностью получили пакет
 					{
 						std::shared_ptr<Packet> packet = std::make_shared<Packet>();
 						packet->m_buffer.resize(pmi.m_cpSize);
-						memcpy(&packet->m_buffer[0], m_connection->m_buffer, pmi.m_cpSize); // ?
+						memcpy(&packet->m_buffer[0], m_connection->m_buffer, pmi.m_cpSize);
 
 						pmi.append(packet);
 
@@ -141,10 +140,10 @@ namespace PNet
 				}
 			}
 
-			if (m_master_fd.revents & POLLWRNORM) //������������� ������ ���������� � ������ ������
+			if (m_master_fd.revents & POLLWRNORM) //необходимость записи помечается в начале фрейма
 			{
 				PacketManager& pmo = *m_connection->m_pmOutgoing;
-				while (pmo.hasPendingPacket()) //��������� ���� �� ��� ����������. � �������� ��������� ��������� ��� ��������� ������
+				while (pmo.hasPendingPacket()) //Проверяем есть ли что отправлять. И пытаемся мгновенно отправить все ожидающие пакеты
 				{
 					int bytesSended = 0;
 					if (pmo.m_cpTask == PacketTask::PROCESS_PACKET_SIZE)
@@ -153,10 +152,10 @@ namespace PNet
 						const uint16_t encodedPacketSize = htons(pmo.m_cpSize);
 
 						bytesSended = send(m_master_fd.fd, (char*)&encodedPacketSize + pmo.m_cpExtractionOffset, sizeof(uint16_t) - pmo.m_cpExtractionOffset, 0);
-						if (bytesSended > 0) //��� WSAEWOULDBLOCK bytesSended ���� -1 //���� �������� 1 ����, �� ����� WSAEWOULDBLOCK? bytesSended = -1 ??
+						if (bytesSended > 0) //при WSAEWOULDBLOCK bytesSended тоже -1 //если отправит 1 байт, но будет WSAEWOULDBLOCK? bytesSended = -1 ??
 							pmo.m_cpExtractionOffset += bytesSended;
 
-						if (pmo.m_cpExtractionOffset == sizeof(uint16_t)) //���� ������ ��������� �������
+						if (pmo.m_cpExtractionOffset == sizeof(uint16_t)) //если размер полностью передан
 						{
 							pmo.m_cpExtractionOffset = 0;
 							pmo.m_cpTask = PacketTask::PROCESS_PACKET_CONTENTS;
@@ -165,10 +164,10 @@ namespace PNet
 					else //process packet contents
 					{
 						bytesSended = send(m_master_fd.fd, &pmo.front()->m_buffer[0] + pmo.m_cpExtractionOffset, pmo.m_cpSize - pmo.m_cpExtractionOffset, 0);
-						if (bytesSended > 0) //��� WSAEWOULDBLOCK bytesSended ���� -1 //���� �������� 1 ����, �� ����� WSAEWOULDBLOCK? bytesSended = -1 ??
+						if (bytesSended > 0) //при WSAEWOULDBLOCK bytesSended тоже -1 //если отправит 1 байт, но будет WSAEWOULDBLOCK? bytesSended = -1 ??
 							pmo.m_cpExtractionOffset += bytesSended;
 
-						if (pmo.m_cpExtractionOffset == pmo.m_cpSize) //���� ����� ��������� �������
+						if (pmo.m_cpExtractionOffset == pmo.m_cpSize) //если пакет полностью передан
 						{
 							pmo.m_cpExtractionOffset = 0;
 							pmo.m_cpTask = PacketTask::PROCESS_PACKET_SIZE;
@@ -183,9 +182,9 @@ namespace PNet
 						{
 							closeConnection("Socket error: " + error);
 							return false;
-						}//��� send ����� �����, � non-blocking �� ���� ���������� ������� - ��������� � ��������� ������
+						}//для send нужно время, а non-blocking не ждет завершения функции - продолжим в следующем фрейме
 						std::cerr << m_connectionInfo << "WSAEWOULDBLOCK on writing. Breaking.\n";
-						break; //����� ����� ����� ���������� �������� �� ���������� ����� - ����������� ���������
+						break; //иначе будем ждать завершения отправки во внутреннем цикле - блокирующее поведение
 					}
 				}
 				if (pmo.hasPendingPacket() == false)
@@ -193,8 +192,8 @@ namespace PNet
 			}
 			m_master_fd.revents = 0;
 		}
-		//����� ��������� ���� ������� � ������� ��������
-		while (m_connection->m_pmIncoming->hasPendingPacket()) //������������ ��� ��������
+		//после обработки всех событий в текущей итерации
+		while (m_connection->m_pmIncoming->hasPendingPacket()) //обрабатываем все входящие
 		{
 			if (!processPacket(*m_connection->m_pmIncoming->front()))
 			{

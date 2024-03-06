@@ -17,21 +17,21 @@ namespace PNet
 		assignPacketType(packetType);
 	}
 
-	void Packet::reset() //��������� � ���������� � ������ 2 ����� ����������� ��� ������
+	void Packet::reset() //обнуление и назначение в первые 2 байта неизвестный тип пакета
 	{
 		m_buffer.resize(sizeof(PacketType));
 		assignPacketType(PacketType::PACKET_INVALID);
 		m_extractionOffset = sizeof(PacketType);
 	}
 
-	void Packet::assignPacketType(const PacketType packetType) // ��������� � ������ 2 ����� ��� ������ � network order
+	void Packet::assignPacketType(const PacketType packetType) //назначаем в первые 2 байта тип пакета в network order
 	{
 		PacketType* packetTypePtr = reinterpret_cast<PacketType*>(&m_buffer[0]);
 		const u_short encodedPacket = htons(static_cast<u_short>(packetType));
 		*packetTypePtr = static_cast<PacketType>(encodedPacket);
 	}
 	
-	PacketType Packet::getPacketType() //������� ���� ������ � host order �� ������ ���� ����
+	PacketType Packet::getPacketType() //возврат типа пакета в host order из первых двух байт
 	{
 		const PacketType* packetTypePtr = reinterpret_cast<PacketType*>(&m_buffer[0]);
 		const u_short packetType = ntohs(static_cast<u_short>(*packetTypePtr));
@@ -40,7 +40,7 @@ namespace PNet
 
 	void Packet::append(const void* data, uint32_t size)
 	{
-		if ((m_buffer.size() + size) > g_MaxPacketSize) // �������� ������ �����
+		if ((m_buffer.size() + size) > g_MaxPacketSize) //проверка одного ввода
 			throw PacketException("[Packet::append(const void*, uint32_t)] - Packet size exceeded max packet size.");
 
 		m_buffer.insert(m_buffer.end(), (char*)data, (char*)data + size);
@@ -73,7 +73,7 @@ namespace PNet
 		return *this;
 	}
 
-	Packet& Packet::operator>>(uint32_t& data) // buffer >> data // ����� �� �������� buffer
+	Packet& Packet::operator>>(uint32_t& data) // buffer >> data // вывод не изменяет buffer
 	{
 		if ((m_extractionOffset + sizeof(data)) > m_buffer.size())
 			throw PacketException("[Packet& Packet::operator>>(uint32_t&)] - Exctraction offset exceeded buffer size.");

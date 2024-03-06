@@ -4,7 +4,7 @@
 
 namespace PNet
 {
-	// ������� ���������� ��� ����������� �� ���������� ip
+	// Попытка определить тип подключения по введенному ip
 	IPEndpoint::IPEndpoint(const char* ip, const unsigned short port)
 	{
 		m_port = port;
@@ -12,7 +12,7 @@ namespace PNet
 		// IPv4 ?
 		in_addr addr;
 		int result = inet_pton(AF_INET, ip, &addr);
-		if (result == 1) // ���� ������ IPv4 �����
+		if (result == 1) // если введен IPv4 адрес
 		{
 			m_ipString = ip;
 			m_hostname = ip;
@@ -26,7 +26,7 @@ namespace PNet
 		// IPv6 ?
 		in6_addr addr6;
 		result = inet_pton(AF_INET6, ip, &addr6);
-		if (result == 1) // ���� ������ IPv6 �����
+		if (result == 1) // если введен IPv6 адрес
 		{
 			m_ipString = ip;
 			m_hostname = ip;

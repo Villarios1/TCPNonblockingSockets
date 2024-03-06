@@ -20,9 +20,9 @@ namespace PNet
 
 	bool Socket::create()
 	{
-		assert(m_ipVersion == IPVersion::IPV4 || m_ipVersion == IPVersion::IPV6); //�����
+		assert(m_ipVersion == IPVersion::IPV4 || m_ipVersion == IPVersion::IPV6); //
 
-		if (m_handle != INVALID_SOCKET) //���� handle ��� ���������
+		if (m_handle != INVALID_SOCKET) //если handle уже определен
 		{
 			std::cerr << "create socket error: INVALID_SOCKET\n";
 			return false;
